@@ -13,9 +13,11 @@ class ChatCellTableViewCell: UITableViewCell {
 
     @IBOutlet weak var messageField: UILabel!
     
+    @IBOutlet weak var emailField: UILabel!
     var myMessage: PFObject? {
         didSet {
             messageField.text = myMessage?["text"] as! String
+            emailField.text = (myMessage?["user"] as! PFUser).username! as String
         }
     }
     override func awakeFromNib() {

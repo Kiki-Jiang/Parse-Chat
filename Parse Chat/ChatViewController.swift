@@ -21,6 +21,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        tableView.delegate = self
         tableView.dataSource = self
         tableView.estimatedRowHeight = 50
         tableView.rowHeight = UITableViewAutomaticDimension
@@ -36,6 +37,7 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     @IBAction func createNewMessage(_ sender: Any) {
         let myMessage = PFObject(className:"Message")
         myMessage["text"] = messageField.text
+        myMessage["user"] = PFUser.current()
         myMessage.saveInBackground {
             (success: Bool, error: Error?) -> Void in
             if (success) {
@@ -50,17 +52,24 @@ class ChatViewController: UIViewController, UITableViewDelegate, UITableViewData
     func refresh() {
         let query = PFQuery(className:"Message")
         query.whereKeyExists("text")
+        query.whereKeyExists("user")
+        query.order(byDescending: "createdAt")
+        query.includeKeys(["text","user"])
+        //query.includeKey("user")
         query.findObjectsInBackground {
             (objects: [PFObject]?, error: Error?) -> Void in
             
             if error == nil {
                 // The find succeeded.
                 print("Successfully find messages")
-                query.order(byDescending: "createdAt")
+                
 
                 // Do something with the found objects
                 if let objects = objects {
                     self.messages = objects
+                    /*for object in objects {
+                        print((objects["user"] as PFUser).username)
+                    }*/
                     self.tableView.reloadData()
                 }
             } else {
